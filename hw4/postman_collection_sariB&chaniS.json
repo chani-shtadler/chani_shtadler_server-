@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "GitHub Copilot - HW4 Game API",
+    "_postman_id": "gitcopilot-hw4-game-api",
+    "description": "Collection created by GitHub Copilot for HW4. Contains numbered requests exercising all available endpoints, with ERROR-marked cases to verify auth and error middleware.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Admin: Update Range WITHOUT Token (ERROR)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{ \"minNum\": 1, \"maxNum\": 50 }" },
+        "url": { "raw": "{{baseUrl}}/manage/range" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// ERROR: trying admin action without token should be rejected (401)",
+        "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
+      ] } } ]
+    },
+    {
+      "name": "02 - Admin: Login (get token)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{ \"name\": \"admin\", \"password\": \"330650052\" }" },
+        "url": { "raw": "{{baseUrl}}/manage/login" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "var j = pm.response.json();",
+        "pm.test('Has token', function () { pm.expect(j).to.have.property('token'); });",
+        "pm.environment.set('token', j.token);"
+      ] } } ]
+    },
+    {
+      "name": "03 - Admin: Update Range (Authorized)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{ \"minNum\": 1, \"maxNum\": 50 }" },
+        "url": { "raw": "{{baseUrl}}/manage/range" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "var j = pm.response.json(); pm.test('Has min and max', function () { pm.expect(j).to.have.property('min'); pm.expect(j).to.have.property('max'); });"
+      ] } } ]
+    },
+    {
+      "name": "04 - Admin: Set New Number (Authorized)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "25" },
+        "url": { "raw": "{{baseUrl}}/manage/newnumber" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// After this request the server's random number should be set to 25 (if implementation accepts raw number)",
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+      ] } } ]
+    },
+    {
+      "name": "05 - Public: Get number root (check range text)",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/number/" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "pm.test('Body contains the number message', function () { pm.expect(pm.response.text()).to.include('the number is between range'); });"
+      ] } } ]
+    },
+    {
+      "name": "06 - Guess: call /number/30 (EXPECTED: middleware triggers ERROR) (ERROR)",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/number/30" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// NOTE: current implementation of /number/:randomNumber calls next(number) causing error middleware to run",
+        "// ERROR: expecting 500 (error middleware) as implemented in the project",
+        "pm.test('Status is 500 (error middleware reached)', function () { pm.response.to.have.status(500); });",
+        "// you can inspect the error body",
+        "var j = pm.response.json();",
+        "pm.test('Error body has error field', function () { pm.expect(j).to.have.property('error'); });"
+      ] } } ]
+    },
+    {
+      "name": "07 - Admin: Generate New Random (Authorized)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/manage/randomagein" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "var j = pm.response.json(); pm.test('Has random field', function () { pm.expect(j).to.have.property('random'); });"
+      ] } } ]
+    },
+    {
+      "name": "08 - Admin: Get random (may be undefined) (ERROR)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/manage/random" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// ERROR: implementation returns the value of newRandomNumber() which is void, so random may be undefined",
+        "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+        "var j = pm.response.json();",
+        "pm.test('Response has random (may be undefined)', function () { pm.expect(j).to.have.property('random'); });"
+      ] } } ]
+    },
+    {
+      "name": "09 - Admin: Update Range WITH bad body (ERROR)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "body": { "mode": "raw", "raw": "{ \"minNum\": 60, \"maxNum\": 50 }" },
+        "url": { "raw": "{{baseUrl}}/manage/range" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// ERROR: min > max should produce 400",
+        "pm.test('Status is 400', function () { pm.response.to.have.status(400); });"
+      ] } } ]
+    },
+    {
+      "name": "10 - Admin: Set New Number out of range (ERROR)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "body": { "mode": "raw", "raw": "9999" },
+        "url": { "raw": "{{baseUrl}}/manage/newnumber" }
+      },
+      "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "// ERROR: value outside current range should return 400",
+        "pm.test('Status is 400', function () { pm.response.to.have.status(400); });"
+      ] } } ]
+    }
+  ]
+}
