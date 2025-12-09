@@ -1,0 +1,4 @@
+{"_id":{"$oid":"693885989181cc32b9bacbf9"},"bookName":"hello","bookPublisher":"chaim","createdAt":{"$date":"2025-12-09T20:24:56.935Z"},"updatedAt":{"$date":"2025-12-09T20:24:56.935Z"}}
+{"_id":{"$oid":"6938890745a31183d85bce5d"},"bookName":"shalom","bookPublisher":"bracha","createdAt":{"$date":"2025-12-09T20:39:35.314Z"},"updatedAt":{"$date":"2025-12-09T20:39:35.314Z"}}
+{"_id":{"$oid":"6938895ef3a3ecdd689a23bb"},"bookName":"shalom","bookPublisher":"bracha","createdAt":{"$date":"2025-12-09T20:41:02.039Z"},"updatedAt":{"$date":"2025-12-09T20:41:02.039Z"}}
+{"_id":{"$oid":"69388d09d9e687f4e2718f55"},"bookName":"myBook","bookPublisher":"esther","createdAt":{"$date":"2025-12-09T20:56:41.405Z"},"updatedAt":{"$date":"2025-12-09T20:56:41.405Z"}}
